@@ -1,0 +1,2 @@
+curl -LOf https://github.com/dortania/PatcherSupportPkg/raw/master/Universal-Binaries/10.13.6/System/Library/Extensions/ATIRadeonX2000.kext/Contents/MacOS/ATIRadeonX2000
+printf '\x90\x90' | dd bs=1 conv=notrunc seek=35704 of=ATIRadeonX2000
