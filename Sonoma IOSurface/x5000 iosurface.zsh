@@ -25,6 +25,11 @@ write 0xb8
 set 0x16ac8
 write 0xb8
 
+# AMDRadeonX4000_AMDGFX9Resource::initIOSurface
+
+set 0x3d112
+write 0xb8
+
 # IOSurface::getPixelFormat
 
 # AMDRadeonX5000_AMDAccelResource::zeroVidMemory (again)

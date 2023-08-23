@@ -41,6 +41,12 @@ set 0x168e0
 assert 0xb0
 write 0xb8
 
+# AMDRadeonX4000_AMDVIResource::initIOSurface
+
+set 0x5827c
+assert 0xb0
+write 0xb8
+
 # IOSurface::getPixelFormat
 
 # AMDRadeonX4000_AMDAccelResource::zeroVidMemory (again)
