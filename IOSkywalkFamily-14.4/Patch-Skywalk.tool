@@ -1,0 +1,96 @@
+# Patch IOSkywalkFamily.kext for 14.4+
+# Kext from OCLP repo
+
+#!/bin/zsh
+
+set -e
+
+export code="$(dirname "$0")"
+cd "$code"
+
+prefixOut="Patched"
+rm -rf "$prefixOut"
+mkdir "$prefixOut"
+
+cp -R IOSkywalkFamily.kext $prefixOut/IOSkywalkFamily.kext
+
+lipo -thin x86_64 $prefixOut/IOSkywalkFamily.kext/Contents/MacOS/IOSkywalkFamily -output $prefixOut/IOSkywalkFamily.kext/Contents/MacOS/IOSkywalkFamily
+
+# replace _IORPCMessageFromMach with _tb_message_construct
+
+./Binpatcher $prefixOut/IOSkywalkFamily.kext/Contents/MacOS/IOSkywalkFamily $prefixOut/IOSkywalkFamily.kext/Contents/MacOS/IOSkywalkFamily 'set 0x96510
+write 0x5F74625F6D6573736167655F636F6E737472756374
+
+# disable functions that call _IORPCMessageFromMach
+
+symbol __ZN21IOUserNetworkEthernet9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN21IOUserNetworkEthernet9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN49OSAction_IOUserNetworkEthernet__RxSQDataAvailable8DispatchE5IORPC
+return 0x0
+symbol __ZN49OSAction_IOUserNetworkEthernet__RxSQDataAvailable9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN49OSAction_IOUserNetworkEthernet__RxSQDataAvailable9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN49OSAction_IOUserNetworkEthernet__TxSQDataAvailable8DispatchE5IORPC
+return 0x0
+symbol __ZN49OSAction_IOUserNetworkEthernet__TxSQDataAvailable9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN49OSAction_IOUserNetworkEthernet__TxSQDataAvailable9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN45OSAction_IOUserNetworkEthernet__DataAvailable8DispatchE5IORPC
+return 0x0
+symbol __ZN45OSAction_IOUserNetworkEthernet__DataAvailable9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN45OSAction_IOUserNetworkEthernet__DataAvailable9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN17IOUserNetworkWLAN9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN17IOUserNetworkWLAN9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN19IOUserNetworkPacket8DispatchE5IORPC
+return 0x0
+symbol __ZN19IOUserNetworkPacket9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN19IOUserNetworkPacket9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN24IOUserNetworkPacketQueue9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN24IOUserNetworkPacketQueue9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN29IOUserNetworkPacketBufferPool9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN29IOUserNetworkPacketBufferPool9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkTxSubmissionQueue9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkTxSubmissionQueue9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkTxCompletionQueue8DispatchE5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkTxCompletionQueue9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkTxCompletionQueue9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkRxCompletionQueue8DispatchE5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkRxCompletionQueue9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkRxCompletionQueue9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkRxSubmissionQueue9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN30IOUserNetworkRxSubmissionQueue9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN24IOUserNetworkLogicalLink9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN24IOUserNetworkLogicalLink9MetaClass8DispatchE5IORPC
+return 0x0
+symbol __ZN21IOUserNetworkQueueSet9_DispatchEPS_5IORPC
+return 0x0
+symbol __ZN21IOUserNetworkQueueSet9MetaClass8DispatchE5IORPC
+return 0x0
+'
+
+codesign -fs - $prefixOut/IOSkywalkFamily.kext/Contents/MacOS/IOSkywalkFamily
