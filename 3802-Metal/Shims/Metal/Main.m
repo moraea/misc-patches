@@ -1,6 +1,3 @@
-//./Binpatcher Metal Metal 'set 0x184654'
-//write 0x3332303233'
-
 #import "Utils.h"
 
 long fake_validateAIR()
