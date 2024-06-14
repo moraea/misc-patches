@@ -55,4 +55,4 @@ function build
 	codesign -f -s - "$mainOut"
 }
 
-build "SharedUtils_136" "SharedUtils_144" "/System/Library/Frameworks/LocalAuthentication.framework/Support/SharedUtils.framework/Versions/A/SharedUtils"
+build "SharedUtils_136" "SharedUtils_15" "/System/Library/Frameworks/LocalAuthentication.framework/Support/SharedUtils.framework/Versions/A/SharedUtils"
