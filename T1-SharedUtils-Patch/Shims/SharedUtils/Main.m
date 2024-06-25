@@ -1,8 +1,8 @@
 #import "Utils.h"
 
-long fake()
+id fake()
 {
-	return 0;
+	return nil;
 }
 
 __attribute__((constructor))
@@ -17,6 +17,11 @@ void load()
         if([NSProcessInfo.processInfo.arguments[0] containsString:@"coreauthd"])
         {
             swizzleImp(@"SecureStorage",@"exportedInterface",false,(IMP)fake,NULL);
+        }
+		
+        if([NSProcessInfo.processInfo.arguments[0] containsString:@"identityservicesd"])
+        {
+            swizzleImp(@"IDSNGMFullDeviceIdentity",@"identityWithAccess:usageIdentifier:error:",false,(IMP)fake,NULL);
         }
     }
 }
