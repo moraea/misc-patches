@@ -3,9 +3,6 @@ set -e
 victim=AMDMTLBronzeDriver
 reexported=/System/Library/Frameworks/IOSurface.framework/Versions/A/IOSurface
 
-cd "$tmp"
-PATH+=:"$PWD"
-
 cp ${victim}_original $victim
 
 impostorInstall=/System/Library/Extensions/$victim.bundle/Contents/MacOS/impostor.dylib
