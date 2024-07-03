@@ -8,6 +8,8 @@ PATH+=:"$PWD"
 
 cp ${victim}_original $victim
 
-install_name_tool -change $reexported /System/Library/Extensions/impostor.dylib $victim
+impostorInstall=/System/Library/Extensions/$victim.bundle/Contents/MacOS/impostor.dylib
 
-clang -fmodules -dynamiclib interpose.m -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I non-metal-common/Utils -I . -install_name /System/Library/Extensions/impostor.dylib -Xlinker -reexport_library -Xlinker $reexported -o impostor.dylib
+install_name_tool -change $reexported $impostorInstall $victim
+
+clang -fmodules -dynamiclib interpose.m -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I non-metal-common/Utils -I . -install_name $impostorInstall -Xlinker -reexport_library -Xlinker $reexported -o impostor.dylib
