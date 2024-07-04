@@ -2,6 +2,8 @@
 @import Darwin;
 @import Metal;
 
+#import "interposer utils.m"
+
 #import "MontereyRender.h"
 #import "SequoiaRender.h"
 #import "MontereyCompute.h"
@@ -12,25 +14,9 @@
 #define SequoiaCompute struct sequoiaCompute_MTLComputePipelineDescriptorPrivate
 
 pthread_key_t threadMontereyRenderKey;
+dispatch_once_t threadMontereyRenderOnce;
 pthread_key_t threadMontereyComputeKey;
-dispatch_once_t threadOnce;
-
-void ensureThreadStorageMade()
-{
-	dispatch_once(&threadOnce,^()
-	{
-		assert(!pthread_key_create(&threadMontereyRenderKey,free));
-		assert(!pthread_key_create(&threadMontereyComputeKey,free));
-	});
-}
-
-__attribute__((always_inline)) BOOL calledFromMetal()
-{
-	// hack: we know dsc addresses are like that
-	
-	char* caller=__builtin_extract_return_addr(__builtin_return_address(0));
-	return caller>(char*)0x700000000000;
-}
+dispatch_once_t threadMontereyComputeOnce;
 
 SequoiaRender* (*real_render)(id,SEL);
 void* fake_render(id self,SEL sel)
@@ -41,13 +27,7 @@ void* fake_render(id self,SEL sel)
 		return sequoia;
 	}
 	
-	ensureThreadStorageMade();
-	MontereyRender* monterey=pthread_getspecific(threadMontereyRenderKey);
-	if(!monterey)
-	{
-		monterey=malloc(sizeof(MontereyRender));
-		pthread_setspecific(threadMontereyRenderKey,monterey);
-	}
+	MontereyRender* monterey=getOrMakeThreadStorage(&threadMontereyRenderOnce,&threadMontereyRenderKey,sizeof(MontereyRender));
 	monterey->attachments=sequoia->attachments;
 	memcpy(monterey->rtBlendDescHash,sequoia->rtBlendDescHash,sizeof(monterey->rtBlendDescHash));
 	monterey->depthAttachmentPixelFormat=sequoia->depthAttachmentPixelFormat;
@@ -104,13 +84,7 @@ void* fake_compute(id self,SEL sel)
 		return sequoia;
 	}
 	
-	ensureThreadStorageMade();
-	MontereyCompute* monterey=pthread_getspecific(threadMontereyComputeKey);
-	if(!monterey)
-	{
-		monterey=malloc(sizeof(MontereyCompute));
-		pthread_setspecific(threadMontereyComputeKey,monterey);
-	}
+	MontereyCompute* monterey=getOrMakeThreadStorage(&threadMontereyComputeOnce,&threadMontereyComputeKey,sizeof(MontereyCompute));
 	monterey->label=sequoia->label;
 	monterey->computeFunction=sequoia->computeFunction;
 	monterey->threadGroupSizeIsMultipleOfThreadExecutionWidth=sequoia->threadGroupSizeIsMultipleOfThreadExecutionWidth;
@@ -142,11 +116,12 @@ __attribute__((constructor)) void load()
 {
 	@autoreleasepool
 	{
-		tracePrefix=@"structs interposer";
+		tracePrefix=@"31001 interposer";
 		traceLog=true;
+		tracePrint=false;
 		swizzleLog=false;
 		
-		swizzleImp(@"MTLRenderPipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_render,(IMP*)&real_render);
-		swizzleImp(@"MTLComputePipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_compute,(IMP*)&real_compute);
+		swizzleSafer(@"MTLRenderPipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_render,(IMP*)&real_render);
+		swizzleSafer(@"MTLComputePipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_compute,(IMP*)&real_compute);
 	}
 }
