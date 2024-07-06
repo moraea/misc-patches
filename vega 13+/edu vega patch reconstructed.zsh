@@ -1,4 +1,7 @@
-# auto-generated
+# Edu's original script was lost; reconstructed by diffing the __text sections.
+# input dsce (v7) 21G72 non-h AMDRadeonX5000MTLDriver
+# stuff outside text will differ due to code signature, dsce changes, etc., but this should generate a functionally identical bin to the psp copy.
+
 Binpatcher vega_dsce vega_reconstructed 'set 0x132ad
 assert 0x88
 write 0x80
