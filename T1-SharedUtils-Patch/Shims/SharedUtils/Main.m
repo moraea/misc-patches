@@ -51,3 +51,14 @@ void load()
     return nil;
 }
 @end
+
+@interface LACachedExternalizedContext:NSObject
+@end
+@interface LACachedExternalizedContext(Stub)
+@end
+@implementation LACachedExternalizedContext(Stub)
+-(id)invalidate
+{
+    return nil;
+}
+@end
