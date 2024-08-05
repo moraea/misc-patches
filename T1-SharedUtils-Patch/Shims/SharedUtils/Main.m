@@ -62,3 +62,14 @@ void load()
     return nil;
 }
 @end
+
+@interface LAPasscodeHelper:NSObject
+@end
+@interface LAPasscodeHelper(Stub)
+@end
+@implementation LAPasscodeHelper(Stub)
+-(id)verifyPasswordUsingAKS:(id)arg2 acmContext:(id)arg3 userId:(id)arg4 policy:(id)arg5 options:(id)arg6 bioLockoutRecovery:(id)arg7
+{
+    return nil;
+}
+@end
