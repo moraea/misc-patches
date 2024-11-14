@@ -21,7 +21,7 @@ void load()
 		
         if([NSProcessInfo.processInfo.arguments[0] containsString:@"identityservicesd"])
         {
-            swizzleImp(@"IDSNGMFullDeviceIdentity",@"identityWithAccess:usageIdentifier:error:",false,(IMP)fake,NULL);
+            swizzleImp(@"NGMFullPrekey",@"initWithPrekeySignedBy:error:",true,(IMP)fake,NULL);
         }
     }
 }
