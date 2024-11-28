@@ -55,6 +55,20 @@ function build
 	codesign -f -s - "$mainOut"
 }
 
+# TEMPORARY AMY CURSED THING
+
+./Binpatcher Metal_1321 Metal_1321 'set 0x914e5
+nop 0x2
+
+set 0x914f6
+nop 0x2
+
+set 0x91b15
+nop 0x2
+
+set 0x91b1f
+nop 0x2'
+
 build "Metal_1321" "Metal_15" "/System/Library/Frameworks/Metal.framework/Versions/A/Metal"
 
 # Replace 31001 with 32023 dlopen path
