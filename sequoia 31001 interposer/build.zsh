@@ -1,11 +1,18 @@
 set -e
 
-driverName="$1"
-codeName=interposer.m
-impostorName=impostor.dylib
-impersonatedPath=/System/Library/Frameworks/IOSurface.framework/Versions/A/IOSurface
+patchedActualPath="$1"
+impostorActualPath="$(dirname "$patchedActualPath")/impostor.dylib"
 
-cp "${driverName}_original" "$driverName"
-impostorPath="/System/Library/Extensions/$driverName.bundle/Contents/MacOS/$impostorName"
-install_name_tool -change "$impersonatedPath" "$impostorPath" "$driverName"
-clang -fmodules -dynamiclib "$codeName" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I non-metal-common/Utils -I . -install_name "$impostorPath" -Xlinker -reexport_library -Xlinker "$impersonatedPath" -o "$impostorName"
+patchedInstallPath="$(otool -D "$patchedActualPath" | tail -n 1)"
+impersonatedInstallPath=/System/Library/Frameworks/IOSurface.framework/Versions/A/IOSurface
+impostorInstallPath="$(dirname "$patchedInstallPath")/impostor.dylib"
+
+echo "\e[35mupdate \"$patchedActualPath\" (install path \"$patchedInstallPath\") to use \"$impostorActualPath\" (install path \"$impostorInstallPath\") impersonating \"$impersonatedInstallPath\"\e[0m"
+
+install_name_tool -change "$impersonatedInstallPath" "$impostorInstallPath" "$patchedActualPath"
+
+codePath="$(dirname "$0")"
+clang -fmodules -dynamiclib "$codePath/interposer.m" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I "$codePath/../../moraea-common/Utils" -install_name "$impostorInstallPath" -Xlinker -reexport_library -Xlinker "$impersonatedInstallPath" -o "$impostorActualPath"
+
+codesign -f -s - "$impostorActualPath"
+codesign -f -s - "$patchedActualPath"
