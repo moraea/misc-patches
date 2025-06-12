@@ -4,6 +4,10 @@
 
 #import "interposer utils.m"
 
+#ifdef METAL_IS_KIL
+#import "metaliskil.m"
+#endif
+
 @class MTLRenderPipelineColorAttachmentDescriptorArrayInternal;
 @class MTLVertexDescriptorInternal;
 @class MTLPipelineBufferDescriptorArrayInternal;
@@ -301,5 +305,9 @@ __attribute__((constructor)) void load()
 		swizzleSafer(@"MTLRenderPipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPipelineDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPipelineDescriptorInternal__descriptorPrivate);
 		swizzleSafer(@"MTLComputePipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLComputePipelineDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLComputePipelineDescriptorInternal__descriptorPrivate);
 		swizzleSafer(@"MTLRenderPipelineColorAttachmentDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate);
+		
+#ifdef METAL_IS_KIL
+			metalIsKilSetup();
+#endif
 	}
 }

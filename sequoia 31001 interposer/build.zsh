@@ -35,7 +35,13 @@ getStructs MTLRenderPipelineDescriptorInternal MTLRenderPipelineDescriptorPrivat
 getStructs MTLComputePipelineDescriptorInternal MTLComputePipelineDescriptorPrivate
 getStructs MTLRenderPipelineColorAttachmentDescriptorInternal MTLRenderPipelineAttachmentDescriptorPrivate
 
-clang -fmodules -dynamiclib "$codePath/interposer.m" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I "$codePath/../../moraea-common/Utils" -I . -install_name "$impostorInstallPath" -Xlinker -reexport_library -Xlinker "$impersonatedInstallPath" -o "$impostorActualPath"
+if [[ "$patchedInstallPath" == /System/Library/Extensions/AppleIntel* ]]
+then
+	echo "\e[31menabling metal is kil!\e[0m"
+	metalIsKilArg=-DMETAL_IS_KIL
+fi
+
+clang -fmodules -dynamiclib "$codePath/interposer.m" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I "$codePath/../../moraea-common/Utils" -I . -I "$codePath/../wrapper disable metal" "$metalIsKilArg" -install_name "$impostorInstallPath" -Xlinker -reexport_library -Xlinker "$impersonatedInstallPath" -o "$impostorActualPath"
 
 codesign -f -s - "$impostorActualPath"
 codesign -f -s - "$patchedActualPath"
