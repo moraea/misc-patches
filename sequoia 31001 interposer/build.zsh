@@ -12,7 +12,38 @@ echo "\e[35mupdate \"$patchedActualPath\" (install path \"$patchedInstallPath\")
 install_name_tool -change "$impersonatedInstallPath" "$impostorInstallPath" "$patchedActualPath"
 
 codePath="$(dirname "$0")"
-clang -fmodules -dynamiclib "$codePath/interposer.m" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I "$codePath/../../moraea-common/Utils" -install_name "$impostorInstallPath" -Xlinker -reexport_library -Xlinker "$impersonatedInstallPath" -o "$impostorActualPath"
+
+ipsw class-dump --headers "$codePath/../../moraea-sources/12.7.6 (21H1320)/Metal" -o monterey
+ipsw class-dump --headers "$codePath/../../moraea-sources/26.0 (25A5279m)/Metal" -o tahoe
+
+function getStructs
+{
+	className="$1"
+	structName="$2"
+	
+	for prefix in monterey tahoe
+	do
+		{
+			echo "struct ${prefix}_$structName"
+			grep "  struct $structName" "$prefix/Metal/$className.h" | grep -E -o '{.*}' | sed 's/; /;\n/g'
+			echo ';'
+		} > "$prefix/$structName.h"
+	done
+}
+
+getStructs MTLRenderPipelineDescriptorInternal MTLRenderPipelineDescriptorPrivate
+getStructs MTLComputePipelineDescriptorInternal MTLComputePipelineDescriptorPrivate
+getStructs MTLRenderPipelineColorAttachmentDescriptorInternal MTLRenderPipelineAttachmentDescriptorPrivate
+
+clang -fmodules -dynamiclib "$codePath/interposer.m" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I "$codePath/../../moraea-common/Utils" -I . -install_name "$impostorInstallPath" -Xlinker -reexport_library -Xlinker "$impersonatedInstallPath" -o "$impostorActualPath"
 
 codesign -f -s - "$impostorActualPath"
 codesign -f -s - "$patchedActualPath"
+
+cp "$codePath/../../moraea-sources/26.0 (25A5279m)/QuartzCore" .
+
+Binpatcher QuartzCore QuartzCore_patched 'set 0x230497
+assert 0x0f836f1e0000
+nop 0x6'
+
+codesign -f -s - QuartzCore_patched
