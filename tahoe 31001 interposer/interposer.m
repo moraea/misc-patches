@@ -4,7 +4,7 @@
 
 #import "interposer utils.m"
 
-#ifdef METAL_IS_KIL
+#ifdef METAL_IS_KIL_INTEL
 #import "metaliskil.m"
 #endif
 
@@ -294,6 +294,11 @@ void* fake_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate
 	return monterey;
 }
 
+id returnNil()
+{
+	return nil;
+}
+
 __attribute__((constructor)) void load()
 {
 	@autoreleasepool
@@ -306,8 +311,15 @@ __attribute__((constructor)) void load()
 		swizzleSafer(@"MTLComputePipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLComputePipelineDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLComputePipelineDescriptorInternal__descriptorPrivate);
 		swizzleSafer(@"MTLRenderPipelineColorAttachmentDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate);
 		
-#ifdef METAL_IS_KIL
-			metalIsKilSetup();
+#ifdef METAL_IS_KIL_INTEL
+		metalIsKilSetup();
+#endif
+		
+#ifdef METAL_IS_KIL_GCN
+		if([@[@"/System/Library/ExtensionKit/Extensions/UsersGroups.appex/Contents/MacOS/UsersGroups"] containsObject:NSProcessInfo.processInfo.arguments[0]])
+		{
+			swizzleImp(@"BronzeMtlDevice",@"initWithAcceleratorPort:",true,(IMP)returnNil,NULL);
+		}
 #endif
 	}
 }
