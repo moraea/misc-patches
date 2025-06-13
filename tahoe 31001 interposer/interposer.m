@@ -4,10 +4,6 @@
 
 #import "interposer utils.m"
 
-#ifdef METAL_IS_KIL_INTEL
-#import "metaliskil.m"
-#endif
-
 @class MTLRenderPipelineColorAttachmentDescriptorArrayInternal;
 @class MTLVertexDescriptorInternal;
 @class MTLPipelineBufferDescriptorArrayInternal;
@@ -299,6 +295,14 @@ id returnNil()
 	return nil;
 }
 
+#if defined METAL_IS_KIL_INTEL
+#define NoMetalProcesses @[@"/System/Library/CoreServices/NotificationCenter.app/Contents/MacOS/NotificationCenter",@"/System/Applications/Font Book.app/Contents/MacOS/Font Book"]
+#define NoMetalClass @"MTLIGAccelDevice"
+#elif defined METAL_IS_KIL_GCN
+#define NoMetalProcesses @[@"/System/Library/ExtensionKit/Extensions/UsersGroups.appex/Contents/MacOS/UsersGroups"]
+#define NoMetalClass @"BronzeMtlDevice"
+#endif
+
 __attribute__((constructor)) void load()
 {
 	@autoreleasepool
@@ -311,14 +315,10 @@ __attribute__((constructor)) void load()
 		swizzleSafer(@"MTLComputePipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLComputePipelineDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLComputePipelineDescriptorInternal__descriptorPrivate);
 		swizzleSafer(@"MTLRenderPipelineColorAttachmentDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate);
 		
-#ifdef METAL_IS_KIL_INTEL
-		metalIsKilSetup();
-#endif
-		
-#ifdef METAL_IS_KIL_GCN
-		if([@[@"/System/Library/ExtensionKit/Extensions/UsersGroups.appex/Contents/MacOS/UsersGroups"] containsObject:NSProcessInfo.processInfo.arguments[0]])
+#ifdef NoMetalProcesses
+		if([NoMetalProcesses containsObject:NSProcessInfo.processInfo.arguments[0]])
 		{
-			swizzleImp(@"BronzeMtlDevice",@"initWithAcceleratorPort:",true,(IMP)returnNil,NULL);
+			swizzleImp(NoMetalClass,@"initWithAcceleratorPort:",true,(IMP)returnNil,NULL);
 		}
 #endif
 	}
