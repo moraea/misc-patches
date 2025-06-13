@@ -5,6 +5,19 @@ id fake()
 	return nil;
 }
 
+NSXPCInterface* (*real_LAInternalProtocols_interfaceWithInternalProtocol)(NSObject*,SEL,Protocol*);
+
+NSXPCInterface* fake_LAInternalProtocols_interfaceWithInternalProtocol(NSObject* self,SEL selector,Protocol* protocol)
+{
+	if(protocol&&[@[@"LACRemoteUIHost",@"LACAgentProxyXPC",@"LACRemoteUI",@"LACUIMechanism"] containsObject:[NSString stringWithUTF8String:protocol_getName(protocol)]])
+	{
+		Class LACXPCInterface=NSClassFromString(@"LACXPCInterface");
+		return [LACXPCInterface interfaceForXPCProtocol:protocol];
+	}
+	
+	return real_LAInternalProtocols_interfaceWithInternalProtocol(self,selector,protocol);
+}
+
 __attribute__((constructor))
 void load()
 {
@@ -23,6 +36,16 @@ void load()
         {
             swizzleImp(@"NGMFullPrekey",@"initWithPrekeySignedBy:error:",true,(IMP)fake,NULL);
         }
+        
+        Class MechanismBase=NSClassFromString(@"MechanismBase");
+        if(MechanismBase)
+        {
+			class_addMethod(MechanismBase,sel_registerName("canRecoverFromError:request:"),(IMP)fake,"q@:qq");
+		}
+
+        swizzleImp(@"LAParamChecker",@"checkOptions:",false,(IMP)fake,NULL);
+        
+        swizzleImp(@"LAInternalProtocols",@"interfaceWithInternalProtocol:",false,(IMP)fake_LAInternalProtocols_interfaceWithInternalProtocol,(IMP*)&real_LAInternalProtocols_interfaceWithInternalProtocol);
     }
 }
 
