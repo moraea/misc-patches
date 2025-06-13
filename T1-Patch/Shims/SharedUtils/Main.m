@@ -18,6 +18,23 @@ NSXPCInterface* fake_LAInternalProtocols_interfaceWithInternalProtocol(NSObject*
 	return real_LAInternalProtocols_interfaceWithInternalProtocol(self,selector,protocol);
 }
 
+void (*real_NSXPCInterface_setInterface_forSelector_argumentIndex_ofReply)(NSXPCInterface*,SEL,NSXPCInterface*,SEL,NSUInteger,BOOL);
+
+void fake_NSXPCInterface_setInterface_forSelector_argumentIndex_ofReply(NSXPCInterface* self,SEL sel,NSXPCInterface* argInterface,SEL methodSel,NSUInteger argIndex,BOOL ofReply)
+{
+	if(self.protocol&&!strcmp(protocol_getName(self.protocol),"LADaemonXPC"))
+	{
+		if(methodSel&&!strcmp(sel_getName(methodSel),"connectToExistingContext:callback:clientId:reply:"))
+		{
+			trace(@"NSXPCInterface setInterface:forSelector:argumentIndex:ofReply: hook ignoring LADaemonXPC connectToExistingContext:callback:clientId:reply: stack %@",NSThread.callStackSymbols);
+			
+			return;
+		}
+	}
+	
+	real_NSXPCInterface_setInterface_forSelector_argumentIndex_ofReply(self,sel,argInterface,methodSel,argIndex,ofReply);
+}
+
 __attribute__((constructor))
 void load()
 {
@@ -46,6 +63,8 @@ void load()
         swizzleImp(@"LAParamChecker",@"checkOptions:",false,(IMP)fake,NULL);
         
         swizzleImp(@"LAInternalProtocols",@"interfaceWithInternalProtocol:",false,(IMP)fake_LAInternalProtocols_interfaceWithInternalProtocol,(IMP*)&real_LAInternalProtocols_interfaceWithInternalProtocol);
+        
+        swizzleImp(@"NSXPCInterface",@"setInterface:forSelector:argumentIndex:ofReply:",true,(IMP)fake_NSXPCInterface_setInterface_forSelector_argumentIndex_ofReply,(IMP*)&real_NSXPCInterface_setInterface_forSelector_argumentIndex_ofReply);
     }
 }
 
