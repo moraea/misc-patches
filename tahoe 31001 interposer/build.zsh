@@ -13,22 +13,28 @@ install_name_tool -change "$impersonatedInstallPath" "$impostorInstallPath" "$pa
 
 codePath="$(dirname "$0")"
 
-ipsw class-dump --headers "$codePath/../../moraea-sources/12.7.6 (21H1320)/Metal" -o monterey
-ipsw class-dump --headers "$codePath/../../moraea-sources/26.0 (25A5279m)/Metal" -o tahoe
+function getStruct
+{
+	headerPath="$1"
+	structName="$2"
+	prefix="$3"
+	
+	mkdir -p "$prefix"
+	
+	{
+		echo "struct ${prefix}_$structName"
+		grep "  struct $structName" "$headerPath" | grep -E -o '{.*}' | sed 's/; /;\n/g' | sed 's/^\</id\</g'
+		echo ';'
+	} > "$prefix/$structName.h"
+}
 
 function getStructs
 {
 	className="$1"
 	structName="$2"
 	
-	for prefix in monterey tahoe
-	do
-		{
-			echo "struct ${prefix}_$structName"
-			grep "  struct $structName" "$prefix/Metal/$className.h" | grep -E -o '{.*}' | sed 's/; /;\n/g'
-			echo ';'
-		} > "$prefix/$structName.h"
-	done
+	getStruct "$codePath/../../moraea-sources/12.7.6 (21H1320)/headers/Metal/$className.h" "$structName" monterey
+	getStruct "$codePath/../../moraea-sources/26.0 (25A5279m)/headers/Metal/$className.h" "$structName" tahoe
 }
 
 getStructs MTLRenderPipelineDescriptorInternal MTLRenderPipelineDescriptorPrivate
