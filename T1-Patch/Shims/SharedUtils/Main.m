@@ -26,9 +26,9 @@ void fake_NSXPCInterface_setInterface_forSelector_argumentIndex_ofReply(NSXPCInt
 	{
 		if(methodSel&&!strcmp(sel_getName(methodSel),"connectToExistingContext:callback:clientId:reply:"))
 		{
-			trace(@"NSXPCInterface setInterface:forSelector:argumentIndex:ofReply: hook ignoring LADaemonXPC connectToExistingContext:callback:clientId:reply: stack %@",NSThread.callStackSymbols);
+			trace(@"NSXPCInterface setInterface:forSelector:argumentIndex:ofReply: LADaemonXPC hack stack %@",NSThread.callStackSymbols);
 			
-			return;
+			methodSel=sel_registerName("connectToExistingContext:callback:clientId:flags:reply:");
 		}
 	}
 	
