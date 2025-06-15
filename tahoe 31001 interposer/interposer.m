@@ -401,6 +401,51 @@ void* fake_MTLTextureDescriptorInternal_descriptorPrivate(MTLTextureDescriptorIn
 	return monterey;
 }
 
+id (*real__MTLLibrary_newFunctionWithName)(id,SEL,id);
+
+id fake__MTLLibrary_newFunctionWithName(id self,SEL sel,id name)
+{
+	trace(@"_MTLLibrary newFunctionWithName: name %@",name);
+	
+	return real__MTLLibrary_newFunctionWithName(self,sel,name);
+}
+
+id (*real__MTLDevice_newLibraryWithURL_error)(id,SEL,id,id);
+
+id fake__MTLDevice_newLibraryWithURL_error(id self,SEL sel,id url,id error)
+{
+	trace(@"_MTLDevice newLibraryWithURL: url %@",url);
+	
+	return real__MTLDevice_newLibraryWithURL_error(self,sel,url,error);
+}
+
+id (*real__MTLDevice_newLibraryWithFile_error)(id,SEL,id,id);
+
+id fake__MTLDevice_newLibraryWithFile_error(id self,SEL sel,id path,id error)
+{
+	trace(@"_MTLDevice newLibraryWithFile: path %@",path);
+	
+	return real__MTLDevice_newLibraryWithFile_error(self,sel,path,error);
+}
+
+id (*real__MTLDevice_newDefaultLibrary)(id,SEL);
+
+id fake__MTLDevice_newDefaultLibrary(id self,SEL sel)
+{
+	trace(@"_MTLDevice newDefaultLibrary stack %@",NSThread.callStackSymbols);
+	
+	return real__MTLDevice_newDefaultLibrary(self,sel);
+}
+
+id (*real__MTLDevice_newDefaultLibraryWithBundle_error)(id,SEL,id,id);
+
+id fake__MTLDevice_newDefaultLibraryWithBundle_error(id self,SEL sel,id bundle,id error)
+{
+	trace(@"_MTLDevice newDefaultLibraryWithBundle:error: bundle %@ stack %@",bundle,NSThread.callStackSymbols);
+	
+	return real__MTLDevice_newDefaultLibraryWithBundle_error(self,sel,bundle,error);
+}
+
 id returnNil()
 {
 	return nil;
@@ -433,6 +478,14 @@ __attribute__((constructor)) void load()
 		
 		swizzleSafer(@"MTLRenderPassDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPassDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPassDescriptorInternal__descriptorPrivate);
 		swizzleSafer(@"MTLTextureDescriptorInternal",@"descriptorPrivate",true,(IMP)fake_MTLTextureDescriptorInternal_descriptorPrivate,(IMP*)&real_MTLTextureDescriptorInternal_descriptorPrivate);
+		
+		// logging only
+		
+		swizzleSafer(@"_MTLLibrary",@"newFunctionWithName:",true,(IMP)fake__MTLLibrary_newFunctionWithName,(IMP*)&real__MTLLibrary_newFunctionWithName);
+		swizzleSafer(@"_MTLDevice",@"newLibraryWithURL:error:",true,(IMP)fake__MTLDevice_newLibraryWithURL_error,(IMP*)&real__MTLDevice_newLibraryWithURL_error);
+		swizzleSafer(@"_MTLDevice",@"newLibraryWithFile:error:",true,(IMP)fake__MTLDevice_newLibraryWithFile_error,(IMP*)&real__MTLDevice_newLibraryWithFile_error);
+		swizzleSafer(@"_MTLDevice",@"newDefaultLibrary",true,(IMP)fake__MTLDevice_newDefaultLibrary,(IMP*)&real__MTLDevice_newDefaultLibrary);
+		swizzleSafer(@"_MTLDevice",@"newDefaultLibraryWithBundle:error:",true,(IMP)fake__MTLDevice_newDefaultLibraryWithBundle_error,(IMP*)&real__MTLDevice_newDefaultLibraryWithBundle_error);
 		
 #ifdef NoMetalProcesses
 		if([NoMetalProcesses containsObject:NSProcessInfo.processInfo.arguments[0]])
