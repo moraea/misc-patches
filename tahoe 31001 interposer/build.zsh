@@ -40,15 +40,17 @@ function getStructs
 getStructs MTLRenderPipelineDescriptorInternal MTLRenderPipelineDescriptorPrivate
 getStructs MTLComputePipelineDescriptorInternal MTLComputePipelineDescriptorPrivate
 getStructs MTLRenderPipelineColorAttachmentDescriptorInternal MTLRenderPipelineAttachmentDescriptorPrivate
+getStructs MTLRenderPassDescriptorInternal MTLRenderPassDescriptorPrivate
+getStructs MTLTextureDescriptorInternal MTLTextureDescriptorPrivate
 
 if [[ "$patchedInstallPath" == /System/Library/Extensions/AppleIntel*GraphicsMTLDriver.bundle/Contents/MacOS/AppleIntel*GraphicsMTLDriver ]]
 then
 	echo "\e[31mmetal is kil (intel)\e[0m"
-	metalIsKilArg=-DMETAL_IS_KIL_INTEL
+	metalIsKilArg=-DNoMetalIntel
 elif [[ "$patchedInstallPath" == /System/Library/Extensions/AMDMTLBronzeDriver.bundle/Contents/MacOS/AMDMTLBronzeDriver ]]
 then
 	echo "\e[31mmetal is kil (gcn)\e[0m"
-	metalIsKilArg=-DMETAL_IS_KIL_GCN
+	metalIsKilArg=-DNoMetalGCN
 fi
 
 clang -fmodules -dynamiclib "$codePath/interposer.m" -Wno-unused-getter-return-value -Xlinker -no_warn_inits -I "$codePath/../../moraea-common/Utils" -I . "$metalIsKilArg" -install_name "$impostorInstallPath" -Xlinker -reexport_library -Xlinker "$impersonatedInstallPath" -o "$impostorActualPath"

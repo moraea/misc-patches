@@ -11,6 +11,10 @@
 @class MTLRenderPipelineDescriptorInternal;
 @class MTLComputePipelineDescriptorInternal;
 @class MTLRenderPipelineColorAttachmentDescriptorInternal;
+@class MTLRenderPassColorAttachmentDescriptorArrayInternal;
+@class MTLRenderPassSampleBufferAttachmentDescriptorArrayInternal;
+@class MTLRenderPassDescriptorInternal;
+@class MTLTextureDescriptorInternal;
 @protocol MTLPipelineLibrary;
 
 #import "monterey/MTLRenderPipelineDescriptorPrivate.h"
@@ -21,6 +25,12 @@
 
 #import "monterey/MTLRenderPipelineAttachmentDescriptorPrivate.h"
 #import "tahoe/MTLRenderPipelineAttachmentDescriptorPrivate.h"
+
+#import "monterey/MTLRenderPassDescriptorPrivate.h"
+#import "tahoe/MTLRenderPassDescriptorPrivate.h"
+
+#import "monterey/MTLTextureDescriptorPrivate.h"
+#import "tahoe/MTLTextureDescriptorPrivate.h"
 
 pthread_key_t threadKey_MTLRenderPipelineDescriptorPrivate;
 dispatch_once_t threadOnce_MTLRenderPipelineDescriptorPrivate;
@@ -290,17 +300,116 @@ void* fake_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate
 	return monterey;
 }
 
+pthread_key_t threadKey_MTLRenderPassDescriptorPrivate;
+dispatch_once_t threadOnce_MTLRenderPassDescriptorPrivate;
+
+struct tahoe_MTLRenderPassDescriptorPrivate* (*real_MTLRenderPassDescriptorInternal__descriptorPrivate)(MTLRenderPassDescriptorInternal*,SEL);
+
+void* fake_MTLRenderPassDescriptorInternal__descriptorPrivate(MTLRenderPassDescriptorInternal* self,SEL sel)
+{
+	// trace(@"MTLRenderPassDescriptorInternal _descriptorPrivate stack %@",NSThread.callStackSymbols);
+	
+	struct tahoe_MTLRenderPassDescriptorPrivate* tahoe=real_MTLRenderPassDescriptorInternal__descriptorPrivate(self,sel);
+	
+	if(calledFromMetal())
+	{
+		return tahoe;
+	}
+	
+	struct monterey_MTLRenderPassDescriptorPrivate* monterey=getOrMakeThreadStorage(&threadOnce_MTLRenderPassDescriptorPrivate,&threadKey_MTLRenderPassDescriptorPrivate,sizeof(struct monterey_MTLRenderPassDescriptorPrivate));
+	
+	monterey->attachments=tahoe->attachments;
+	monterey->visibilityResultBuffer=tahoe->visibilityResultBuffer;
+	monterey->renderTargetWidth=tahoe->renderTargetWidth;
+	monterey->renderTargetHeight=tahoe->renderTargetHeight;
+	monterey->defaultColorSampleCount=tahoe->defaultColorSampleCount;
+	monterey->fineGrainedBackgroundVisibilityEnabled=tahoe->fineGrainedBackgroundVisibilityEnabled;
+	
+	// tahoe unused: skipEmptyTilesOnClearEnabled
+	
+	monterey->ditherEnabled=tahoe->ditherEnabled;
+	monterey->openGLModeEnabled=tahoe->openGLModeEnabled;
+	monterey->renderTargetArrayLength=tahoe->renderTargetArrayLength;
+	monterey->tileWidth=tahoe->tileWidth;
+	monterey->tileHeight=tahoe->tileHeight;
+	memcpy(&monterey->x11,&tahoe->x12,sizeof(monterey->x11));
+	monterey->imageBlockSampleLength=tahoe->imageBlockSampleLength;
+	monterey->threadgroupMemoryLength=tahoe->threadgroupMemoryLength;
+	memcpy(&monterey->x,&tahoe->x,sizeof(monterey->x));
+	monterey->numCustomSamplePositions=tahoe->numCustomSamplePositions;
+	monterey->rasterizationRateMap=tahoe->rasterizationRateMap;
+	monterey->sampleBufferAttachments=tahoe->sampleBufferAttachments;
+	monterey->pointCoordYFlipEnabled=tahoe->pointCoordYFlipEnabled;
+	
+	// end of monterey struct
+	// tahoe unused: visibilityResultType
+	// tahoe unused: supportColorAttachmentMapping
+	
+	return monterey;
+}
+
+pthread_key_t threadKey_MTLTextureDescriptorPrivate;
+dispatch_once_t threadOnce_MTLTextureDescriptorPrivate;
+
+struct tahoe_MTLTextureDescriptorPrivate* (*real_MTLTextureDescriptorInternal_descriptorPrivate)(MTLTextureDescriptorInternal*,SEL);
+
+void* fake_MTLTextureDescriptorInternal_descriptorPrivate(MTLTextureDescriptorInternal* self,SEL sel)
+{
+	struct tahoe_MTLTextureDescriptorPrivate* tahoe=real_MTLTextureDescriptorInternal_descriptorPrivate(self,sel);
+	
+	if(calledFromMetal())
+	{
+		return tahoe;
+	}
+	
+	struct monterey_MTLTextureDescriptorPrivate* monterey=getOrMakeThreadStorage(&threadOnce_MTLTextureDescriptorPrivate,&threadKey_MTLTextureDescriptorPrivate,sizeof(struct monterey_MTLTextureDescriptorPrivate));
+	
+	monterey->textureType=tahoe->textureType;
+	monterey->pixelFormat=tahoe->pixelFormat;
+	monterey->width=tahoe->width;
+	monterey->height=tahoe->height;
+	monterey->depth=tahoe->depth;
+	monterey->mipmapLevelCount=tahoe->mipmapLevelCount;
+	monterey->sampleCount=tahoe->sampleCount;
+	monterey->arrayLength=tahoe->arrayLength;
+	monterey->zeroFill=tahoe->zeroFill;
+	monterey->rotation=tahoe->rotation;
+	monterey->framebufferOnly=tahoe->framebufferOnly;
+	monterey->isDrawable=tahoe->isDrawable;
+	monterey->swizzle=tahoe->swizzle;
+	monterey->writeSwizzleEnabled=tahoe->writeSwizzleEnabled;
+	monterey->compressionMode=tahoe->compressionMode;
+	memcpy(&monterey->x15,&tahoe->x15,sizeof(monterey->x15));
+	monterey->resourceOptions=tahoe->resourceOptions;
+	monterey->sparseSurfaceDefaultValue=tahoe->sparseSurfaceDefaultValue;
+	monterey->allowGPUOptimizedContents=tahoe->allowGPUOptimizedContents;
+	monterey->forceResourceIndex=tahoe->forceResourceIndex;
+	monterey->resourceIndex=tahoe->resourceIndex;
+	monterey->protectionOptions=tahoe->protectionOptions;
+	monterey->compressionFootprint=tahoe->compressionFootprint;
+	monterey->compressionType=tahoe->compressionType;
+	
+	// tahoe unused: colorSpaceConversionMatrix
+	// tahoe unused: placementSparsePageSize
+	
+	monterey->resolvedUsage=tahoe->resolvedUsage;
+	monterey->cpuCacheMode=tahoe->cpuCacheMode;
+	monterey->storageMode=tahoe->storageMode;
+	
+	// end of both structs
+	
+	return monterey;
+}
+
 id returnNil()
 {
 	return nil;
 }
 
-#if defined METAL_IS_KIL_INTEL
-#define NoMetalProcesses @[@"/System/Library/CoreServices/NotificationCenter.app/Contents/MacOS/NotificationCenter",@"/System/Applications/Font Book.app/Contents/MacOS/Font Book"]
-#define NoMetalClass @"MTLIGAccelDevice"
-#elif defined METAL_IS_KIL_GCN
+#if defined NoMetalIntel
+#define NoMetalProcesses @[@"/System/Library/CoreServices/NotificationCenter.app/Contents/MacOS/NotificationCenter",@"/System/Applications/Font Book.app/Contents/MacOS/Font Book",@"/System/Library/ExtensionKit/Extensions/UsersGroups.appex/Contents/MacOS/UsersGroups"]
+#elif defined NoMetalGCN
 #define NoMetalProcesses @[@"/System/Library/ExtensionKit/Extensions/UsersGroups.appex/Contents/MacOS/UsersGroups"]
-#define NoMetalClass @"BronzeMtlDevice"
 #endif
 
 __attribute__((constructor)) void load()
@@ -311,14 +420,24 @@ __attribute__((constructor)) void load()
 		tracePrint=false;
 		swizzleLog=false;
 		
+		// fix crashes
+		
 		swizzleSafer(@"MTLRenderPipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPipelineDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPipelineDescriptorInternal__descriptorPrivate);
 		swizzleSafer(@"MTLComputePipelineDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLComputePipelineDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLComputePipelineDescriptorInternal__descriptorPrivate);
+		
+		// fix solid yellow screen
+		
 		swizzleSafer(@"MTLRenderPipelineColorAttachmentDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPipelineColorAttachmentDescriptorInternal__descriptorPrivate);
+		
+		// TODO: called, but unsure if it fixes anything
+		
+		swizzleSafer(@"MTLRenderPassDescriptorInternal",@"_descriptorPrivate",true,(IMP)fake_MTLRenderPassDescriptorInternal__descriptorPrivate,(IMP*)&real_MTLRenderPassDescriptorInternal__descriptorPrivate);
+		swizzleSafer(@"MTLTextureDescriptorInternal",@"descriptorPrivate",true,(IMP)fake_MTLTextureDescriptorInternal_descriptorPrivate,(IMP*)&real_MTLTextureDescriptorInternal_descriptorPrivate);
 		
 #ifdef NoMetalProcesses
 		if([NoMetalProcesses containsObject:NSProcessInfo.processInfo.arguments[0]])
 		{
-			swizzleImp(NoMetalClass,@"initWithAcceleratorPort:",true,(IMP)returnNil,NULL);
+			swizzleImp(@"MTLIOAccelDevice",@"initWithAcceleratorPort:",true,(IMP)returnNil,NULL);
 		}
 #endif
 	}
